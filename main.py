@@ -61,6 +61,7 @@ flags.DEFINE_bool('fid_use_torch', False, help='calculate IS and FID on gpu')
 flags.DEFINE_string('fid_cache', './stats/cifar10.train.npz', help='FID cache')
 flags.DEFINE_string('defense', None, help='Defense tricks, e.g., DP-SGD or L2 Regularizationgg')
 flags.DEFINE_bool('only_member', True, help='Training only on member split')
+flags.DEFINE_bool('negative_mining', False, help='Negative mining for training')
 
 device = torch.device('cuda:0')
 
@@ -212,7 +213,7 @@ def train():
 
     sched = torch.optim.lr_scheduler.LambdaLR(optim, lr_lambda=warmup_lr)
     trainer = GaussianDiffusionTrainer(
-        net_model, FLAGS.beta_1, FLAGS.beta_T, FLAGS.T).to(device)
+        net_model, FLAGS.beta_1, FLAGS.beta_T, FLAGS.T, negative_mining=FLAGS.negative_mining).to(device)
     net_sampler = GaussianDiffusionSampler(
         net_model, FLAGS.beta_1, FLAGS.beta_T, FLAGS.T, FLAGS.img_size,
         FLAGS.mean_type, FLAGS.var_type).to(device)
@@ -250,7 +251,14 @@ def train():
             # train
             optim.zero_grad()
             x_0 = next(datalooper).to(device)
-            loss = trainer(x_0).mean()
+            trainer_output = trainer(x_0)
+            if type(trainer_output) is tuple:
+                loss, oriloss = trainer_output
+                loss = loss.mean()
+                oriloss = oriloss.mean()
+            else:
+                loss = trainer_output.mean()
+                oriloss = loss
             loss.backward()
             torch.nn.utils.clip_grad_norm_(
                 net_model.parameters(), FLAGS.grad_clip)
@@ -259,8 +267,8 @@ def train():
             ema(net_model, ema_model, FLAGS.ema_decay)
 
             # log
-            writer.add_scalar('loss', loss, step)
-            pbar.set_postfix(loss='%.3f' % loss)
+            writer.add_scalar('loss', oriloss, step)
+            pbar.set_postfix(loss='%.3f' % oriloss)
 
             # sample
             if FLAGS.sample_step > 0 and step % FLAGS.sample_step == 0:
