@@ -2,6 +2,39 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import random
+
+class OnlineQuantile:
+    def __init__(self, quantile, sample_size=1000):
+        self.quantile = quantile
+        self.sample_size = sample_size
+        self.sample = []
+
+    def add_num(self, num):
+        if len(self.sample) < self.sample_size:
+            self.sample.append(num)
+        else:
+            # ランダムにサンプリングを入れ替え
+            if random.random() < self.sample_size / (self.sample_size + 1):
+                idx = random.randint(0, self.sample_size - 1)
+                self.sample[idx] = num
+
+    def find_quantile(self):
+        if not self.sample:
+            return None
+        self.sample.sort()
+        idx = int(self.quantile * len(self.sample))
+        return self.sample[idx]
+
+# 使用例
+online_quantile = OnlineQuantile(quantile=0.10)
+data_stream = [1, 5, 2, 10, 6, 3, 8, 7, 4, 9]
+
+for num in data_stream:
+    online_quantile.add_num(num)
+    print("現在の10%分位点:", online_quantile.find_quantile())
+
+
 
 def extract(v, t, x_shape):
     """
@@ -13,11 +46,16 @@ def extract(v, t, x_shape):
 
 
 class GaussianDiffusionTrainer(nn.Module):
-    def __init__(self, model, beta_1, beta_T, T):
+    def __init__(self, model, beta_1, beta_T, T, negative_mining=False):
         super().__init__()
 
         self.model = model
         self.T = T
+        self.negative_mining = negative_mining
+        if self.negative_mining:
+            self.quantiles =[OnlineQuantile(quantile=0.1) for i in range(self.T)]
+            for q in self.quantiles:
+                q.add_num(0.0)
 
         self.register_buffer(
             'betas', torch.linspace(beta_1, beta_T, T).double())
@@ -40,7 +78,18 @@ class GaussianDiffusionTrainer(nn.Module):
             extract(self.sqrt_alphas_bar, t, x_0.shape) * x_0 +
             extract(self.sqrt_one_minus_alphas_bar, t, x_0.shape) * noise)
         loss = F.mse_loss(self.model(x_t, t), noise, reduction='none')
-        return loss
+        if not self.negative_mining:
+            return loss
+
+        # negative mining
+        sample_loss = loss.view(loss.shape[0], -1).mean(1)
+        thresholds = []
+        for i in range(len(sample_loss)):
+            self.quantiles[t[i]].add_num(sample_loss[i].item())
+            thresholds.append(self.quantiles[t[i]].find_quantile())
+        thresholds = torch.tensor(thresholds, device=x_0.device)
+        sample_loss = torch.max(sample_loss - thresholds, 0)
+        return sample_loss, loss
 
 
 class GaussianDiffusionSampler(nn.Module):
