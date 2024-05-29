@@ -8,7 +8,7 @@ import torchvision.datasets
 import numpy as np
 
 # from measures import ssim
-from ..score import fid
+from score import fid
 
 
 class ReconsDataset(torch.utils.data.Dataset):
