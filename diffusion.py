@@ -43,7 +43,7 @@ class GaussianDiffusionTrainer(nn.Module):
         self.model = model
         self.T = T
         self.negative_mining = negative_mining
-        print(self.negative_mining)
+        print('negative mining', self.negative_mining)
         if self.negative_mining:
             self.quantiles =[OnlineQuantile(quantile=0.1) for i in range(self.T)]
             for q in self.quantiles:
@@ -72,7 +72,7 @@ class GaussianDiffusionTrainer(nn.Module):
         loss = F.mse_loss(self.model(x_t, t), noise, reduction='none')
         if not self.negative_mining:
             return loss
-        print('negative mining')
+
         # negative mining
         sample_loss = loss.view(loss.shape[0], -1).mean(1)
         thresholds = []
