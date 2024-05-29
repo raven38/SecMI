@@ -330,7 +330,7 @@ def eval():
         sampler = torch.nn.DataParallel(sampler)
 
     # load model and evaluate
-    ckpt_name = 'ckpt-step800000.pt'
+    ckpt_name = 'ckpt-step30000.pt'
     ckpt = torch.load(os.path.join(FLAGS.logdir, ckpt_name))
     model.load_state_dict(ckpt['net_model'])
     (IS, IS_std), FID, samples = evaluate(sampler, model, FLAGS.logdir, ckpt_name.split('.')[0])
