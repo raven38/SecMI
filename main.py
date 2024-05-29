@@ -54,7 +54,7 @@ flags.DEFINE_string('logdir', './logs/DDPM_CIFAR10_EPS', help='log directory')
 flags.DEFINE_integer('sample_size', 64, "sampling size of images")
 flags.DEFINE_integer('sample_step', 1000, help='frequency of sampling')
 # Evaluation
-flags.DEFINE_integer('save_step', 30000, help='frequency of saving checkpoints, 0 to disable during training')
+flags.DEFINE_integer('save_step', 20000, help='frequency of saving checkpoints, 0 to disable during training')
 flags.DEFINE_integer('eval_step', 0, help='frequency of evaluating model, 0 to disable during training')
 flags.DEFINE_integer('num_images', 25000, help='the number of generated images for evaluation')
 flags.DEFINE_bool('fid_use_torch', False, help='calculate IS and FID on gpu')
@@ -331,7 +331,7 @@ def eval():
         sampler = torch.nn.DataParallel(sampler)
 
     # load model and evaluate
-    ckpt_name = 'ckpt-step30000.pt'
+    ckpt_name = 'checkpoint.pt'
     ckpt = torch.load(os.path.join(FLAGS.logdir, ckpt_name))
     model.load_state_dict(ckpt['net_model'])
     (IS, IS_std), FID, samples = evaluate(sampler, model, FLAGS.logdir, ckpt_name.split('.')[0])
