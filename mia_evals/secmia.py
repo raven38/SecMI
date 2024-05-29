@@ -163,7 +163,7 @@ def norm(x):
 
 
 def get_intermediate_results(model, FLAGS, data_loader, t_sec, timestep):
-
+    print(t_sec, timestep)
     target_steps = list(range(0, t_sec, timestep))[1:]
 
     internal_diffusion_list = []
