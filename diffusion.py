@@ -79,7 +79,7 @@ class GaussianDiffusionTrainer(nn.Module):
             self.quantiles[t[i]].add_num(sample_loss[i].item())
             thresholds.append(self.quantiles[t[i]].find_quantile())
         thresholds = torch.tensor(thresholds, device=x_0.device)
-        sample_loss = torch.max(sample_loss - thresholds, 0)
+        sample_loss = torch.where(sample_loss > thresholds, sample_loss, 0)
         return sample_loss, loss
 
 
