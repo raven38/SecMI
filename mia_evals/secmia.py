@@ -46,9 +46,7 @@ def ddim_singlestep(model, FLAGS, x, t_c, t_target, requires_grad=False, device=
 
 
 def ddim_multistep(model, FLAGS, x, t_c, target_steps, clip=False, device='cuda', requires_grad=False):
-    print(target_steps)
     for idx, t_target in enumerate(target_steps):
-        print(t_target)
         result = ddim_singlestep(model, FLAGS, x, t_c, t_target, requires_grad=requires_grad, device=device)
         x = result['x_t_target']
         t_c = t_target
@@ -163,7 +161,6 @@ def norm(x):
 
 
 def get_intermediate_results(model, FLAGS, data_loader, t_sec, timestep):
-    print(t_sec, timestep)
     target_steps = list(range(0, t_sec, timestep))[1:]
 
     internal_diffusion_list = []
