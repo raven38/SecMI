@@ -46,7 +46,9 @@ def ddim_singlestep(model, FLAGS, x, t_c, t_target, requires_grad=False, device=
 
 
 def ddim_multistep(model, FLAGS, x, t_c, target_steps, clip=False, device='cuda', requires_grad=False):
+    print(target_steps)
     for idx, t_target in enumerate(target_steps):
+        print(t_target)
         result = ddim_singlestep(model, FLAGS, x, t_c, t_target, requires_grad=requires_grad, device=device)
         x = result['x_t_target']
         t_c = t_target
