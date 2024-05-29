@@ -517,7 +517,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     fix_seed(0)
-    ckpt = os.path.join(args.model_dir, 'checkpoint.pt')
+    ckpt = os.path.join(args.model_dir, 'ckpt-step30000.pt')
     flag_path = os.path.join(args.model_dir, 'flagfile.txt')
     device = 'cuda'
     FLAGS = get_FLAGS(flag_path)
