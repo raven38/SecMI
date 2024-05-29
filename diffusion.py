@@ -26,15 +26,6 @@ class OnlineQuantile:
         idx = int(self.quantile * len(self.sample))
         return self.sample[idx]
 
-# 使用例
-online_quantile = OnlineQuantile(quantile=0.10)
-data_stream = [1, 5, 2, 10, 6, 3, 8, 7, 4, 9]
-
-for num in data_stream:
-    online_quantile.add_num(num)
-    print("現在の10%分位点:", online_quantile.find_quantile())
-
-
 
 def extract(v, t, x_shape):
     """
