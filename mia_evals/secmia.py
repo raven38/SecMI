@@ -513,9 +513,9 @@ if __name__ == '__main__':
     parser.add_argument('--model_dir', type=str, default='experiments/CIFAR10')
     parser.add_argument('--data_root', type=str, default='datasets')
     parser.add_argument('--dataset', type=str, default='cifar10')
-    parser.add_argument('--device', type=bool, default='cuda')
-    parser.add_argument('--t_sec', type=bool, default=100)
-    parser.add_argument('--k', type=bool, default=10)
+    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--t_sec', type=int, default=100)
+    parser.add_argument('--k', type=int, default=10)
     args = parser.parse_args()
 
     fix_seed(0)
