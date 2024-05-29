@@ -521,6 +521,6 @@ if __name__ == '__main__':
     flag_path = os.path.join(args.model_dir, 'flagfile.txt')
     device = 'cuda'
     FLAGS = get_FLAGS(flag_path)
-    FLAGS(sys.argv)
+    FLAGS(sys.argv, known_only=True)
     model = get_model(ckpt, FLAGS, WA=True).to(device)
     secmi_attack(model, FLAGS, dataset_root=args.data_root, t_sec=args.t_sec, timestep=args.k, batch_size=1024, dataset=args.dataset)
